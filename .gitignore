@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Java
+target/
+*.class
+*.jar
+*.war
+.idea/
+*.iml
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Node / React
+node_modules/
+dist/
+build/
+.npm
+.eslintcache
