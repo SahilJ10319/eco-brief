@@ -1,4 +1,4 @@
-# EcoBrief (formerly EchoCast)
+# EcoBrief 
 
 > **A distributed serverless AI news oracle.**
 
