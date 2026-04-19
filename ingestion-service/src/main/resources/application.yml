@@ -6,3 +6,7 @@ aws:
   region: us-east-1
   s3:
     bucket-name: ecobrief-raw-payloads
+
+ingestion:
+  schedule:
+    cron: "0 0 */6 * * *"
