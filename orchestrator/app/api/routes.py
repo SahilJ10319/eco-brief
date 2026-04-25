@@ -2,9 +2,14 @@ from fastapi import APIRouter, HTTPException, Depends
 from botocore.exceptions import ClientError
 from app.core.aws import get_s3_client
 from app.core.config import settings
+from app.core.ec2_manager import EC2Manager
+from app.core.user_data import build_user_data
+from app.api.schemas import InferenceRequest, InferenceResponse
 from typing import Any
 
 router = APIRouter()
+
+_ec2_manager = EC2Manager()
 
 
 @router.get("/health")
@@ -36,3 +41,30 @@ def get_payload(source_id: str, article_id: str, s3=Depends(get_s3_client)) -> d
         if e.response["Error"]["Code"] == "NoSuchKey":
             raise HTTPException(status_code=404, detail="payload not found")
         raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.post("/inference/trigger", response_model=InferenceResponse)
+def trigger_inference(request: InferenceRequest) -> InferenceResponse:
+    user_data = build_user_data(
+        aws_region=settings.aws_region,
+        s3_raw_bucket=settings.s3_bucket_name,
+        s3_audio_bucket=settings.s3_audio_bucket,
+        payload_key=request.payload_key,
+        model_id=request.model_id,
+    )
+    try:
+        instance_id = _ec2_manager.launch_inference_instance(
+            ami_id=settings.ec2_ami_id,
+            instance_type=settings.ec2_instance_type,
+            user_data=user_data,
+            security_group_ids=settings.security_group_list,
+            iam_instance_profile=settings.ec2_iam_profile,
+        )
+    except ClientError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    return InferenceResponse(
+        instance_id=instance_id,
+        payload_key=request.payload_key,
+        status="launched",
+    )
