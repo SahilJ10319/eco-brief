@@ -22,7 +22,8 @@ python3 /tmp/inference_payload.py \
     --bucket-raw $$S3_RAW_BUCKET \
     --bucket-audio $$S3_AUDIO_BUCKET \
     --payload-key $$PAYLOAD_KEY \
-    --model-id $$MODEL_ID
+    --model-id $$MODEL_ID \
+    --region $$AWS_DEFAULT_REGION
 
 shutdown -h now
 """)

@@ -5,22 +5,6 @@ from ray import serve
 from llama_cpp import Llama
 
 
-class AudioEngine:
-    def __init__(self, region_name: str = "us-east-1"):
-        self.polly = boto3.client("polly", region_name=region_name)
-
-    def generate_speech(self, text: str) -> bytes:
-        response = self.polly.synthesize_speech(
-            Text=text,
-            OutputFormat="mp3",
-            VoiceId="Matthew",
-            Engine="neural"
-        )
-        if "AudioStream" in response:
-            return response["AudioStream"].read()
-        raise RuntimeError("failed to synthesize speech")
-
-
 @serve.deployment(num_replicas=1, ray_actor_options={"num_cpus": 2})
 class SummarizationDeployment:
     def __init__(self, model_id: str):
@@ -56,12 +40,29 @@ def download_model(model_id: str, bucket: str):
         pass
 
 
+def synthesize_audio(text: str, bucket: str, key: str, region: str):
+    polly = boto3.client("polly", region_name=region)
+    s3 = boto3.client("s3")
+    
+    response = polly.synthesize_speech(
+        Text=text,
+        OutputFormat="mp3",
+        VoiceId="Matthew",
+        Engine="neural"
+    )
+    
+    stream = response.get("AudioStream")
+    if stream:
+        s3.put_object(Bucket=bucket, Key=key, Body=stream.read())
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--bucket-raw", required=True)
     parser.add_argument("--bucket-audio", required=True)
     parser.add_argument("--payload-key", required=True)
     parser.add_argument("--model-id", required=True)
+    parser.add_argument("--region", default="us-east-1")
     args = parser.parse_args()
 
     download_model(args.model_id, args.bucket_raw)
@@ -81,14 +82,11 @@ def main():
 
     summary = ray.get(handle.remote(content))
 
-    audio_engine = AudioEngine()
-    mp3_data = audio_engine.generate_speech(summary)
-
     txt_key = args.payload_key.replace("raw/", "summaries/")
     s3.put_object(Bucket=args.bucket_audio, Key=txt_key, Body=summary.encode("utf-8"))
 
-    mp3_key = args.payload_key.replace("raw/", "audio/").replace(".txt", ".mp3")
-    s3.put_object(Bucket=args.bucket_audio, Key=mp3_key, Body=mp3_data)
+    mp3_key = txt_key.replace(".txt", ".mp3")
+    synthesize_audio(summary, args.bucket_audio, mp3_key, args.region)
 
     ray.shutdown()
 
