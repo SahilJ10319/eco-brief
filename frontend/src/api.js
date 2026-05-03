@@ -25,3 +25,23 @@ export async function triggerPipeline(payloadKey, modelId = "llama-3.2-3b-q4") {
   }
   return response.json();
 }
+
+export async function fetchSummary(payloadKey) {
+  const summaryKey = payloadKey.replace('raw/', '');
+  const response = await fetch(`${API_BASE_URL}/summaries/${summaryKey}`);
+  if (!response.ok) {
+    if (response.status === 404) return null;
+    throw new Error('failed to fetch summary');
+  }
+  return response.json();
+}
+
+export async function fetchAudioUrl(payloadKey) {
+  const audioKey = payloadKey.replace('raw/', '').replace('.txt', '');
+  const response = await fetch(`${API_BASE_URL}/audio/${audioKey}`);
+  if (!response.ok) {
+    if (response.status === 404) return null;
+    throw new Error('failed to fetch audio url');
+  }
+  return response.json();
+}
