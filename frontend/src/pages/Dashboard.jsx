@@ -15,17 +15,21 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadPayloads();
+    const interval = setInterval(() => {
+      loadPayloads(false);
+    }, 10000);
+    return () => clearInterval(interval);
   }, []);
 
-  async function loadPayloads() {
-    setLoading(true);
+  async function loadPayloads(showLoader = true) {
+    if (showLoader) setLoading(true);
     try {
       const data = await fetchPayloads();
       setPayloads(data);
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   }
 
@@ -33,6 +37,7 @@ export default function Dashboard() {
     try {
       await triggerPipeline(key);
       alert('pipeline triggered successfully');
+      loadPayloads(false);
     } catch (error) {
       console.error(error);
       alert('failed to trigger pipeline');
@@ -60,7 +65,14 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold tracking-tight text-slate-100">Raw Payloads</h2>
-        <Button variant="primary" onClick={loadPayloads}>Refresh Data</Button>
+        <div className="flex items-center gap-4">
+          <span className="flex h-3 w-3 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-eco-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-eco-500"></span>
+          </span>
+          <span className="text-sm text-slate-400">Live Sync</span>
+          <Button variant="primary" onClick={() => loadPayloads(true)}>Refresh Data</Button>
+        </div>
       </div>
       
       {loading ? (
@@ -71,7 +83,9 @@ export default function Dashboard() {
             <Card key={payload.key}>
               <div className="flex flex-col h-full justify-between gap-4">
                 <div>
-                  <span className="text-xs font-semibold text-eco-400 tracking-wider uppercase mb-2 block">Source File</span>
+                  <span className={`text-xs font-semibold tracking-wider uppercase mb-2 block ${payload.status === 'completed' ? 'text-eco-400' : 'text-amber-400'}`}>
+                    {payload.status === 'completed' ? 'Processed' : 'Raw File'}
+                  </span>
                   <h3 className="text-lg font-medium text-slate-200 mb-1 truncate" title={payload.key}>
                     {payload.key.split('/').pop()}
                   </h3>
@@ -83,10 +97,20 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Button variant="outline" className="w-full text-sm" onClick={() => openBriefing(payload.key)}>
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-sm disabled:opacity-50 disabled:cursor-not-allowed" 
+                    disabled={payload.status !== 'completed'}
+                    onClick={() => openBriefing(payload.key)}
+                  >
                     View Briefing
                   </Button>
-                  <Button variant="secondary" className="w-full text-sm" onClick={() => handleTrigger(payload.key)}>
+                  <Button 
+                    variant="secondary" 
+                    className="w-full text-sm disabled:opacity-50 disabled:cursor-not-allowed" 
+                    disabled={payload.status === 'completed'}
+                    onClick={() => handleTrigger(payload.key)}
+                  >
                     Process Summary
                   </Button>
                 </div>

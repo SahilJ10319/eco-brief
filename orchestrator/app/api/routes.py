@@ -20,12 +20,24 @@ def health_check() -> dict[str, str]:
 @router.get("/payloads")
 def list_payloads(s3=Depends(get_s3_client)) -> list[dict[str, Any]]:
     try:
-        response = s3.list_objects_v2(
-            Bucket=settings.s3_bucket_name,
-            Prefix="raw/"
-        )
-        objects = response.get("Contents", [])
-        return [{"key": obj["Key"], "size": obj["Size"], "last_modified": str(obj["LastModified"])} for obj in objects]
+        raw_resp = s3.list_objects_v2(Bucket=settings.s3_bucket_name, Prefix="raw/")
+        raw_objs = raw_resp.get("Contents", [])
+
+        audio_resp = s3.list_objects_v2(Bucket=settings.s3_audio_bucket, Prefix="summaries/")
+        audio_keys = {obj["Key"] for obj in audio_resp.get("Contents", [])}
+
+        results = []
+        for obj in raw_objs:
+            key = obj["Key"]
+            summary_key = key.replace("raw/", "summaries/")
+            is_processed = summary_key in audio_keys
+            results.append({
+                "key": key,
+                "size": obj["Size"],
+                "last_modified": str(obj["LastModified"]),
+                "status": "completed" if is_processed else "pending"
+            })
+        return results
     except ClientError as e:
         raise HTTPException(status_code=502, detail=str(e))
 
