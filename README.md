@@ -38,3 +38,7 @@ Built to emphasize absolute control over MLOps and Cloud FinOps, the architectur
 3.  **Inference & Audio:** The EC2 machine loads the 3B quantized AI model into RAM safely, creates the intelligence transcript, and prompts AWS Polly to synthesize the final MP3 briefing.
 4.  **Auto-Termination:** Immediately following the generation of audio files (saved back to S3), the EC2 instance commits self-termination, scaling costs directly back to zero.
 5.  **User Interface:** The polished React frontend retrieves the links and allows consumers to view the transcript text and natively play the high-quality MP3 briefing.
+
+## 📖 Operations & Runbook
+
+For complete instructions on running the system locally via Docker Compose, deployment guidelines, and emergency playbooks to handle scale-to-zero telemetry failures, please refer to the [RUNBOOK.md](./RUNBOOK.md).
