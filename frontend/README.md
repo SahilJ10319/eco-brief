@@ -1,16 +1,20 @@
-# React + Vite
+# EcoBrief — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend module for EcoBrief is a React/Vite single-page application. It connects to the FastAPI orchestrator to display raw S3 payloads, trigger the scale-to-zero inference pipeline, and stream the resulting Polly-generated MP3 audio briefings.
 
-Currently, two official plugins are available:
+## Running locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+The app defaults to connecting to `http://localhost:8000/api/v1`. Override this by setting the `VITE_API_URL` environment variable in a `.env.local` file.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Building for production
 
-## Expanding the ESLint configuration
+```bash
+npm run build
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The compiled static assets are output to `dist/` and served by the nginx container defined in the root `docker-compose.yml`.
