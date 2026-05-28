@@ -17,12 +17,21 @@ function App() {
               </div>
               <span className="text-lg font-semibold tracking-tight">EcoBrief</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-eco-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-eco-500"></span>
-              </span>
-              <span className="text-xs text-slate-500 font-medium">live sync</span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-eco-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-eco-500"></span>
+                </span>
+                <span className="text-xs text-slate-500 font-medium">live sync</span>
+              </div>
+              <div className="h-4 w-[1px] bg-white/10" />
+              <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.06] rounded-full pl-2 pr-3 py-1 hover:bg-white/[0.06] hover:border-white/[0.10] transition-all duration-200">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[9px] font-bold text-white shadow-inner uppercase tracking-wider">
+                  m
+                </div>
+                <span className="text-xs font-semibold text-slate-300 tracking-wide font-sans">mesh</span>
+              </div>
             </div>
           </div>
         </header>
